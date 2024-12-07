@@ -6,7 +6,10 @@ app = Flask(__name__)
 # Comando abaixo cria API com flask Restful
 api = Api(app)
 
-# Sempre cria uma classe cujo nome começa com uma letra maiuscula. Nome da classe baseado na entidade que será atendida: Ex.: Usuario/Users, etc.
+
+# Criar uma classe cujo nome começa com uma letra maiuscula.
+# Nome da classe baseado na entidade que será atendida
+# Ex.: Usuario/Users, etc.
 class HelloWorld(Resource):
     # Define o método a ser utilizado. GET ou POST
     def get(self):
@@ -18,6 +21,7 @@ class Users(Resource):
     def get(self):
         return {'message': 'user 1'}
 
+
 class User(Resource):
     def get(self):
         return {'message': 'CPF'}
@@ -25,12 +29,14 @@ class User(Resource):
     def post(self):
         return {'message': 'teste'}
 
+
 # Cria um recursos adicionando uma rota para o endpoint
-#api.add_resource(HelloWorld, '/')
+# api.add_resource(HelloWorld, '/')
 api.add_resource(Users, '/users')
 api.add_resource(User, '/user', '/user/<string:cpf>')
 
-# Se for executado diretamente, define que a variavel __name__ será igual a __main__, dessa forma permite executar direto com o comando python3 app.py
+# Define que a variavel __name__ será igual a __main__,
+# dessa forma permite executar direto com o comando python3 app.py
 if __name__ == '__main__':
     # Executa no modo Debug
     app.run(debug=True)
