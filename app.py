@@ -1,42 +1,45 @@
 from flask import Flask
+from flask import request
 # Importa as bibliotecas Resource e API
 from flask_restful import Resource, Api
+import mariadb
+import json
 
 app = Flask(__name__)
 # Comando abaixo cria API com flask Restful
 api = Api(app)
 
+# Parametros de conexão com o banco de dados
+config = {
+    'host': 'mariadb',
+    'port': 3306,
+    'user': 'root',
+    'password': 'admin',
+    'database': 'flask'
+}
 
-# Criar uma classe cujo nome começa com uma letra maiuscula.
-# Nome da classe baseado na entidade que será atendida
-# Ex.: Usuario/Users, etc.
-class HelloWorld(Resource):
-    # Define o método a ser utilizado. GET ou POST
-    def get(self):
-        # Retona o JSON
-        return {'hello': 'world'}
+@app.route('/api/people', methods=['GET','POST'])
+def index():
+   # Conecta com o MariaDB
+   conn = mariadb.connect(**config)
+   # Cria o cursor de conexão
+   cur = conn.cursor()
 
+   json_data = []
 
-class Users(Resource):
-    def get(self):
-        return {'message': 'user 1'}
+   if request.method == 'GET':
+    cur.execute("select * from tasks order by id desc")
+    row_headers=[x[0] for x in cur.description]
+    for result in cur:
+        json_data.append(dict(zip(row_headers,result)))
 
+   if request.method == 'POST':
+       description = request.json['description']
+       cur.execute("insert into tasks (description) values (?)",[description])
+       json_data = { 'success': True }
 
-class User(Resource):
-    def get(self):
-        return {'message': 'CPF'}
+   # Retorna JSON com a saida
+   return json.dumps(json_data)
 
-    def post(self):
-        return {'message': 'teste'}
-
-
-# Cria um recursos adicionando uma rota para o endpoint
-# api.add_resource(HelloWorld, '/')
-api.add_resource(Users, '/users')
-api.add_resource(User, '/user', '/user/<string:cpf>')
-
-# Define que a variavel __name__ será igual a __main__,
-# dessa forma permite executar direto com o comando python3 app.py
 if __name__ == '__main__':
-    # Executa no modo Debug e define que vai escutar em todas as interfaces
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port="5000")
