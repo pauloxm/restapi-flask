@@ -1,0 +1,17 @@
+services:
+  mariadb:
+    image: mariadb:11.6.2
+    container_name: mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: admin
+    restart: always
+
+  restapi-flask:
+    depends_on:
+      - mariadb
+    build:
+      context: .
+    container_name: restapi-flask
+    ports:
+      - 5000:5000
+    restart: always
