@@ -2,10 +2,23 @@ services:
   mariadb:
     image: mariadb:11.6.2
     container_name: mariadb
+    ports:
+      - 3306:3306
     environment:
       MARIADB_ROOT_PASSWORD: admin
       MARIADB_USER: flask
       MARIADB_PASSWORD: admin
+    restart: always
+
+  phpmyadmin:
+    depends_on:
+      - mariadb
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
     restart: always
 
   restapi-flask:
