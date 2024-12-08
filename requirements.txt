@@ -6,8 +6,10 @@ Flask==3.1.0
 Flask-RESTful==0.3.10
 itsdangerous==2.2.0
 Jinja2==3.1.4
+mariadb==1.1.11
 MarkupSafe==3.0.2
 mccabe==0.7.0
+packaging==24.2
 pycodestyle==2.12.1
 pyflakes==3.2.0
 pytz==2024.2
