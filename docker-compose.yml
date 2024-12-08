@@ -4,6 +4,8 @@ services:
     container_name: mariadb
     environment:
       MARIADB_ROOT_PASSWORD: admin
+      MARIADB_USER: flask
+      MARIADB_PASSWORD: admin
     restart: always
 
   restapi-flask:
