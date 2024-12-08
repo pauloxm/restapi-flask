@@ -38,5 +38,5 @@ api.add_resource(User, '/user', '/user/<string:cpf>')
 # Define que a variavel __name__ será igual a __main__,
 # dessa forma permite executar direto com o comando python3 app.py
 if __name__ == '__main__':
-    # Executa no modo Debug
-    app.run(debug=True)
+    # Executa no modo Debug e define que vai escutar em todas as interfaces
+    app.run(debug=True, host="0.0.0.0")
