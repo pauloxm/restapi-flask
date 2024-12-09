@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask import request
 # Importa as bibliotecas Resource e API
 from flask_restful import Resource, Api
@@ -28,14 +28,18 @@ def index():
    json_data = []
 
    if request.method == 'GET':
-    cur.execute("select * from tasks order by id desc")
+    sql = "SELECT * FROM tasks ORDER BY id DESC"
+    cur.execute(sql)
     row_headers=[x[0] for x in cur.description]
     for result in cur:
         json_data.append(dict(zip(row_headers,result)))
 
    if request.method == 'POST':
-       description = request.json['description']
-       cur.execute("insert into tasks (description) values (?)",[description])
+       data = request.get_json()
+       tarefa = (data['description'], data['completed'])
+       sql = "INSERT INTO tasks (description, completed) VALUES (%s, %s)"
+       cur.execute(sql, tarefa)
+       conn.commit()
        json_data = { 'success': True }
 
    # Retorna JSON com a saida
