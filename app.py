@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, json
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
@@ -7,6 +7,7 @@ pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mariadb://root:admin@mariadb/flask'
+json.provider.DefaultJSONProvider.ensure_ascii = False
 db = SQLAlchemy(app)
 
 
@@ -40,7 +41,13 @@ def index():
         tasks = Tasks.query.all()
         return jsonify([task.as_dict() for task in tasks])
 
+@app.route('/api/tasks/<int:id>', methods=['GET'])
+def get_tasks(id):
+    task = Tasks.query.get(id)
+    if task:
+        return task.as_dict()
+    else:
+        {'error':'Task not found'}
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port="5000")
-
