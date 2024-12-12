@@ -1,3 +1,5 @@
+from flask import Flask, request, jsonify
+from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
 pymysql.install_as_MySQLdb()
@@ -15,7 +17,6 @@ class Tasks(db.Model):
     completed = db.Column(db.Integer, nullable=False)
 
     # Metodo de representação
-
     def __repr__(self):
         return f"Tasks('{self.description}','{self.completed}')"
 
@@ -42,3 +43,4 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port="5000")
+
