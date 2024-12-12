@@ -38,16 +38,35 @@ def index():
         return jsonify([task.as_dict() for task in tasks])
 
     if request.method == 'POST':
-        tasks = Tasks.query.all()
-        return jsonify([task.as_dict() for task in tasks])
+        new_task = Tasks(
+            description = request.json['description'],
+            completed = request.json['completed'],
+            )
+        db.session.add(new_task)
+        db.session.commit()
+        return new_task.as_dict()
 
-@app.route('/api/tasks/<int:id>', methods=['GET'])
+
+@app.route('/api/tasks/<int:id>', methods=['GET', 'DELETE'])
 def get_tasks(id):
+
     task = Tasks.query.get(id)
-    if task:
-        return task.as_dict()
-    else:
-        {'error':'Task not found'}
+    if request.method == 'GET':
+
+        if task:
+            return task.as_dict()
+        else:
+            return {'error': 'Task not found'}
+
+    if request.method == 'DELETE':
+
+        if task:
+            db.session.delete(task)
+            db.session.commit()
+            return {'data': 'Task deleted successfully'}
+        else:
+            return {'error': 'Task not found'}
+
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port="5000")
