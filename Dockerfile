@@ -13,6 +13,8 @@ RUN pip install -r requirements.txt
 
 RUN apk del build-deps
 
-COPY app.py .
+COPY application application
+COPY config.py .
+COPY wsgi.py .
 
-CMD [ "python", "app.py" ]
+CMD [ "python", "wsgi.py" ]

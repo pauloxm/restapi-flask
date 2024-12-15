@@ -28,6 +28,8 @@ services:
       - mariadb
     build:
       context: .
+    environment:
+      - FLASK_ENV=Development
     container_name: restapi-flask
     ports:
       - 5000:5000
