@@ -18,44 +18,34 @@ _task_parser.add_argument('completed',
                           )
 
 
-# Metodo de representação
-def __repr__(self):
-    return f"Tasks('{self.description}','{self.completed}')"
-
-
-# Monta o dicionario para serialização
-def as_dict(self):
-    return {c.description: getattr(self, c.description)
-            for c in self.__table__.columns}
-
-
 class GetTasks(Resource):
     def get(self):
-        tasks = GetTasks.query.all()
+        tasks = Tasks.query.all()
         return jsonify([task.as_dict() for task in tasks])
 
     def post(self):
-        new_task = Tasks(
+        # data = _task_parser.parse_args()
+        tasks = Tasks(
             description=request.json['description'],
             completed=request.json['completed'],
             )
-        db.session.add(new_task)
+        db.session.add(tasks)
         db.session.commit()
-        return new_task.as_dict()
+        return tasks.as_dict()
 
 
 class Task(Resource):
     def get(self, id):
-        task = Tasks.query.get(id)
-        if task:
-            return task.as_dict()
+        tasks = Tasks.query.get(id)
+        if tasks:
+            return tasks.as_dict()
         else:
             return {'error': 'Task not found'}
 
     def delete(self, id):
-        task = Tasks.query.get(id)
-        if task:
-            db.session.delete(task)
+        tasks = Tasks.query.get(id)
+        if tasks:
+            db.session.delete(tasks)
             db.session.commit()
             return {'data': 'Task deleted successfully'}
         else:
