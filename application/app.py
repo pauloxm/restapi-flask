@@ -2,6 +2,7 @@ from flask import request, jsonify, json
 from .db import db
 from flask_restful import reqparse, Resource
 from .model import Tasks
+from sqlalchemy import exc
 
 json.provider.DefaultJSONProvider.ensure_ascii = False
 
@@ -22,21 +23,25 @@ _task_parser.add_argument('ticket_id',
                           help="This field cannot be blank"
                           )
 
+
 class GetTasks(Resource):
     def get(self):
         tasks = Tasks.query.all()
         return jsonify([task.as_dict() for task in tasks])
 
     def post(self):
-        data = _task_parser.parse_args()
+        # data = _task_parser.parse_args()
         tasks = Tasks(
             description=request.json['description'],
             completed=request.json['completed'],
             ticket_id=request.json['ticket_id'],
             )
-        db.session.add(tasks)
-        db.session.commit()
-        return tasks.as_dict()
+        try:
+            db.session.add(tasks)
+            db.session.commit()
+            return tasks.as_dict()
+        except exc.IntegrityError:
+            return {"message": "Ticket ID already exists"}, 400
 
 
 class Task(Resource):
