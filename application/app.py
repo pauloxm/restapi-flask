@@ -16,7 +16,11 @@ _task_parser.add_argument('completed',
                           required=True,
                           help="This field cannot be blank"
                           )
-
+_task_parser.add_argument('ticket_id',
+                          type=str,
+                          required=True,
+                          help="This field cannot be blank"
+                          )
 
 class GetTasks(Resource):
     def get(self):
@@ -24,10 +28,11 @@ class GetTasks(Resource):
         return jsonify([task.as_dict() for task in tasks])
 
     def post(self):
-        # data = _task_parser.parse_args()
+        data = _task_parser.parse_args()
         tasks = Tasks(
             description=request.json['description'],
             completed=request.json['completed'],
+            ticket_id=request.json['ticket_id'],
             )
         db.session.add(tasks)
         db.session.commit()
