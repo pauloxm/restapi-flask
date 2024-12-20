@@ -1,7 +1,11 @@
 from application import create_app
+import os
 
 
-app = create_app('config.Config')
+if os.getenv("FLASK_ENV") == "development":
+    app = create_app('config.DevConfig')
+else:
+    app = create_app('config.MockConfig')
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port="5000")

@@ -30,7 +30,6 @@ class GetTasks(Resource):
         return jsonify([task.as_dict() for task in tasks])
 
     def post(self):
-        # data = _task_parser.parse_args()
         tasks = Tasks(
             description=request.json['description'],
             completed=request.json['completed'],

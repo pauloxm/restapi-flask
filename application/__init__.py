@@ -4,9 +4,9 @@ from .db import init_db
 from .app import Task, GetTasks
 
 
-def create_app(config):
+def create_app(MockConfig):
     app = Flask(__name__)
-    app.config.from_object(config)
+    app.config.from_object(MockConfig)
     api = Api(app)
     init_db(app)
 
