@@ -20,3 +20,9 @@ INSERT INTO `tasks` (
     `description`,`completed`,`ticket_id`)
     values
     ('task 01','1','20241201001');
+
+-- Table structure for table `healthcheck`
+
+CREATE TABLE IF NOT EXISTS `healthcheck` (
+    `status` TINYINT(1) DEFAULT NULL,
+    ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ;
