@@ -24,5 +24,7 @@ INSERT INTO `tasks` (
 -- Table structure for table `healthcheck`
 
 CREATE TABLE IF NOT EXISTS `healthcheck` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
     `status` TINYINT(1) DEFAULT NULL,
+    PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ;
