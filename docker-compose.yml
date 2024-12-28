@@ -30,7 +30,7 @@ services:
       context: .
     environment:
       - FLASK_ENV=Development
-    container_name: restapi-flask
+    container_name: restapi
     ports:
       - 5000:5000
     restart: always
