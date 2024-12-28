@@ -79,12 +79,10 @@ class Task(Resource):
         # Obtém o token do cabeçalho da requisição
         auth_header = request.headers.get("Authorization")
         if not auth_header:
-            # return jsonify(message="Token é necessário!"), 403
             return {"message": "Absent Token"}, 403
 
         parts = auth_header.split()
         if parts[0].lower() != 'bearer' or len(parts) != 2:
-            # return jsonify(message="Cabeçalho de autorização malformado!"), 401
             return {"message": "Malformed Authorization header"}, 401
         token = parts[1]
 
@@ -97,17 +95,32 @@ class Task(Resource):
             else:
                 return jsonify(error="Task not found")
         except jwt.ExpiredSignatureError:
-            # return jsonify(message="Expired Token!"), 401
             return {"message": "Expired Token"}, 401
         except jwt.InvalidTokenError:
-            # return jsonify(message="Invalid Token!"), 403
             return {"message": "Invalid Token"}, 403
 
     def delete(self, id):
-        tasks = Tasks.query.get(id)
-        if tasks:
-            db.session.delete(tasks)
-            db.session.commit()
-            return {'data': 'Task deleted successfully'}
-        else:
-            return {'error': 'Task not found'}
+        # Obtém o token do cabeçalho da requisição
+        auth_header = request.headers.get("Authorization")
+        if not auth_header:
+            return {"message": "Absent Token"}, 403
+
+        parts = auth_header.split()
+        if parts[0].lower() != 'bearer' or len(parts) != 2:
+            return {"message": "Malformed Authorization header"}, 401
+        token = parts[1]
+
+        try:
+            # Decodifica o token
+            decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            tasks = Tasks.query.get(id)
+            if tasks:
+                db.session.delete(tasks)
+                db.session.commit()
+                return {'data': 'Task deleted successfully'}
+            else:
+                return {'error': 'Task not found'}
+        except jwt.ExpiredSignatureError:
+            return {"message": "Expired Token"}, 401
+        except jwt.InvalidTokenError:
+            return {"message": "Invalid Token"}, 403
