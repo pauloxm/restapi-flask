@@ -10,8 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 json.provider.DefaultJSONProvider.ensure_ascii = False
 
-# Chave secreta para encriptação (ideal usar variável de ambiente em produção)
-SECRET_KEY = os.getenv("SECRET_KEY", "sua-chave-super-secreta")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 _task_parser = reqparse.RequestParser()
 _task_parser.add_argument('description',
@@ -88,7 +87,7 @@ class Task(Resource):
 
         try:
             # Decodifica o token
-            decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             tasks = Tasks.query.get(id)
             if tasks:
                 return tasks.as_dict()
@@ -112,12 +111,12 @@ class Task(Resource):
 
         try:
             # Decodifica o token
-            decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             tasks = Tasks.query.get(id)
             if tasks:
                 db.session.delete(tasks)
                 db.session.commit()
-                return {'data': 'Task deleted successfully'}
+                return {'data': 'Task deleted successfully'}, 200
             else:
                 return {'error': 'Task not found'}
         except jwt.ExpiredSignatureError:
