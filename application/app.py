@@ -33,16 +33,16 @@ _task_parser.add_argument('ticket_id',
 
 class Default(Resource):
     def get(self):
-        return jsonify(message="Bem-vindo à API segura com JWT!")
+        return {"message": "Welcome to the secure API with JWT"}
 
 
 class Login(Resource):
     def get(self):
         data = request.get_json()
         if not data:
-            return jsonify(message="Dados de login não fornecidos!"), 400
+            return {"message": "Login data is missing"}, 400
         if "username" not in data or "password" not in data:
-            return jsonify(message="Campos 'username' e 'password' são obrigatórios!"), 400
+            return {"message": "Fields 'username' and 'password' are mandatory"}, 400
         if data["username"] == "admin" and data["password"] == "123":
             # Gerar o token com expiração
             token = jwt.encode(
@@ -52,7 +52,7 @@ class Login(Resource):
             )
             return jsonify(token=token)
 
-        return jsonify(message="Credenciais inválidas!"), 401
+        return {"message": "Invalid login"}, 401
 
 
 class GetTasks(Resource):
@@ -93,7 +93,7 @@ class Task(Resource):
             if tasks:
                 return tasks.as_dict()
             else:
-                return jsonify(error="Task not found")
+                return {"error": "Task not found"}
         except jwt.ExpiredSignatureError:
             return {"message": "Expired Token"}, 401
         except jwt.InvalidTokenError:
