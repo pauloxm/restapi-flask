@@ -1,15 +1,17 @@
 from flask import Flask
 from flask_restful import Api
 from .db import init_db
-from .app import Task, GetTasks
+from .app import Default, Login, GetTasks, Task
 
 
-def create_app(MockConfig):
+def create_app(DevConfig):
     app = Flask(__name__)
-    app.config.from_object(MockConfig)
+    app.config.from_object(DevConfig)
     api = Api(app)
     init_db(app)
 
+    api.add_resource(Default, '/')
+    api.add_resource(Login, '/login')
     api.add_resource(GetTasks, '/api/tasks')
     api.add_resource(Task, '/api/task/<int:id>')
 

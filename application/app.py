@@ -3,8 +3,15 @@ from .db import db
 from flask_restful import reqparse, Resource
 from .model import Tasks
 from sqlalchemy import exc
+import jwt
+import os
+from datetime import datetime, timedelta, timezone
+
 
 json.provider.DefaultJSONProvider.ensure_ascii = False
+
+# Chave secreta para encriptação (ideal usar variável de ambiente em produção)
+SECRET_KEY = os.getenv("SECRET_KEY", "sua-chave-super-secreta")
 
 _task_parser = reqparse.RequestParser()
 _task_parser.add_argument('description',
@@ -22,6 +29,30 @@ _task_parser.add_argument('ticket_id',
                           required=True,
                           help="This field cannot be blank"
                           )
+
+
+class Default(Resource):
+    def get(self):
+        return jsonify(message="Bem-vindo à API segura com JWT!")
+
+
+class Login(Resource):
+    def get(self):
+        data = request.get_json()
+        if not data:
+            return jsonify(message="Dados de login não fornecidos!"), 400
+        if "username" not in data or "password" not in data:
+            return jsonify(message="Campos 'username' e 'password' são obrigatórios!"), 400
+        if data["username"] == "admin" and data["password"] == "123":
+            # Gerar o token com expiração
+            token = jwt.encode(
+                {"user": data["username"], "exp": datetime.now(timezone.utc) + timedelta(minutes=30)},
+                SECRET_KEY,
+                algorithm="HS256"
+            )
+            return jsonify(token=token)
+
+        return jsonify(message="Credenciais inválidas!"), 401
 
 
 class GetTasks(Resource):
@@ -45,11 +76,32 @@ class GetTasks(Resource):
 
 class Task(Resource):
     def get(self, id):
-        tasks = Tasks.query.get(id)
-        if tasks:
-            return tasks.as_dict()
-        else:
-            return {'error': 'Task not found'}
+        # Obtém o token do cabeçalho da requisição
+        auth_header = request.headers.get("Authorization")
+        if not auth_header:
+            # return jsonify(message="Token é necessário!"), 403
+            return {"message": "Absent Token"}, 403
+
+        parts = auth_header.split()
+        if parts[0].lower() != 'bearer' or len(parts) != 2:
+            # return jsonify(message="Cabeçalho de autorização malformado!"), 401
+            return {"message": "Malformed Authorization header"}, 401
+        token = parts[1]
+
+        try:
+            # Decodifica o token
+            decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            tasks = Tasks.query.get(id)
+            if tasks:
+                return tasks.as_dict()
+            else:
+                return jsonify(error="Task not found")
+        except jwt.ExpiredSignatureError:
+            # return jsonify(message="Expired Token!"), 401
+            return {"message": "Expired Token"}, 401
+        except jwt.InvalidTokenError:
+            # return jsonify(message="Invalid Token!"), 403
+            return {"message": "Invalid Token"}, 403
 
     def delete(self, id):
         tasks = Tasks.query.get(id)
