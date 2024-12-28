@@ -30,6 +30,7 @@ services:
       context: .
     environment:
       - FLASK_ENV=Development
+      - SECRET_KEY="nwOh#YxQD1Sr%IF^172"
     container_name: restapi
     ports:
       - 5000:5000
