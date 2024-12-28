@@ -9,9 +9,27 @@ class Tasks(db.Model):
 
     # Metodo de representação
     def __repr__(self):
-        return f"Tasks('{self.description}','{self.completed}','{self.ticket_id}')"
+        return (
+            "Tasks('{self.description}',"
+            "'{self.completed}',"
+            "'{self.ticket_id}')"
+        )
 
     # Monta o dicionario para serialização
     def as_dict(self):
         return {c.description: getattr(self, c.description)
+                for c in self.__table__.columns}
+
+
+class Healthcheck(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(1), nullable=False)
+
+    # Metodo de representação
+    def __repr__(self):
+        return "HealthCheck('{self.status}')"
+
+    # Monta o dicionario para serialização
+    def as_dict(self):
+        return {c.status: getattr(self, c.status)
                 for c in self.__table__.columns}

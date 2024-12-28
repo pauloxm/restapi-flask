@@ -1,7 +1,7 @@
 from flask import request, jsonify, json
 from .db import db
 from flask_restful import reqparse, Resource
-from .model import Tasks
+from .model import Tasks, Healthcheck
 from sqlalchemy import exc
 import jwt
 import os
@@ -35,17 +35,35 @@ class Default(Resource):
         return {"message": "Welcome to the secure API with JWT"}
 
 
+class HealthChecks(Resource):
+    def get(self):
+        try:
+            healthcheck = Healthcheck.query.first()
+            if healthcheck:
+                return {"Healthcheck": "OK"}, 200
+            else:
+                new_healthcheck = Healthcheck(status=1)
+                db.session.add(new_healthcheck)
+                db.session.commit()
+                db.session.refresh(new_healthcheck)
+                return {"Healthcheck": "OK"}, 200
+        except Exception:
+            return {"Healthcheck": "NOK"}, 400
+
+
 class Login(Resource):
     def get(self):
         data = request.get_json()
         if not data:
             return {"message": "Login data is missing"}, 400
         if "username" not in data or "password" not in data:
-            return {"message": "Fields 'username' and 'password' are mandatory"}, 400
+            return {"message": "Fields 'username' and "
+                    "'password' are mandatory"}, 400
         if data["username"] == "admin" and data["password"] == "123":
             # Gerar o token com expiração
             token = jwt.encode(
-                {"user": data["username"], "exp": datetime.now(timezone.utc) + timedelta(minutes=30)},
+                {"user": data["username"],
+                 "exp": datetime.now(timezone.utc) + timedelta(minutes=30)},
                 SECRET_KEY,
                 algorithm="HS256"
             )

@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restful import Api
 from .db import init_db
-from .app import Default, Login, GetTasks, Task
+from .app import Default, Login, GetTasks, HealthChecks, Task
 
 
 def create_app(DevConfig):
@@ -13,6 +13,7 @@ def create_app(DevConfig):
     api.add_resource(Default, '/')
     api.add_resource(Login, '/login')
     api.add_resource(GetTasks, '/api/tasks')
+    api.add_resource(HealthChecks, '/health')
     api.add_resource(Task, '/api/task/<int:id>')
 
     return app
