@@ -1,4 +1,5 @@
 from .db import db
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class Tasks(db.Model):
@@ -27,32 +28,21 @@ class Healthcheck(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(1), nullable=False)
 
-    # Metodo de representação
-    def __repr__(self):
-        return "HealthCheck('{self.status}')"
-
-    # Monta o dicionario para serialização
-    def as_dict(self):
-        return {c.status: getattr(self, c.status)
-                for c in self.__table__.columns}
-
 
 class Users(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    login = db.Column(db.String(30), nullable=False)
+    username = db.Column(db.String(30), nullable=False)
     password = db.Column(db.String(30), nullable=False)
     name = db.Column(db.String(100), nullable=True)
 
-    # Metodo de representação
-    def __repr__(self):
-        return (
-            "Users('{self.login}',"
-            "'{self.password}',"
-            "'{self.name}')"
-        )
+    # Check password
+    def check_password(self, password):
+        # Criar o hash da senha passada no campo password para
+        # fazer validação com o que vem do banco
+        hashed_password = generate_password_hash(password)
+        return check_password_hash(hashed_password, self.password)
 
-    # Monta o dicionario para serialização
-    def as_dict(self):
-        return {c.login: getattr(self, c.login)
-                for c in self.__table__.columns}
+    # Set password
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)

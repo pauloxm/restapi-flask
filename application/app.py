@@ -1,8 +1,9 @@
 from flask import request, jsonify, json
 from .db import db
 from flask_restful import reqparse, Resource
-from .model import Tasks, Healthcheck
+from .model import Tasks, Healthcheck, Users
 from sqlalchemy import exc
+from sqlalchemy.exc import NoResultFound
 import jwt
 import os
 from datetime import datetime, timedelta, timezone
@@ -40,36 +41,53 @@ class HealthChecks(Resource):
         try:
             healthcheck = Healthcheck.query.first()
             if healthcheck:
-                return {"Healthcheck": "OK"}, 200
+                return {"status": "healthy"}, 200
             else:
                 new_healthcheck = Healthcheck(status=1)
                 db.session.add(new_healthcheck)
                 db.session.commit()
                 db.session.refresh(new_healthcheck)
-                return {"Healthcheck": "OK"}, 200
+                return {"status": "healthy"}, 200
         except Exception:
-            return {"Healthcheck": "NOK"}, 400
+            return {"status": "unhealthy"}, 400
+        finally:
+            db.session.close()
 
 
 class Login(Resource):
     def get(self):
         data = request.get_json()
+        username = data['username']
+        password = data['password']
         if not data:
             return {"message": "Login data is missing"}, 400
         if "username" not in data or "password" not in data:
             return {"message": "Fields 'username' and "
                     "'password' are mandatory"}, 400
-        if data["username"] == "admin" and data["password"] == "123":
-            # Gerar o token com expiração
-            token = jwt.encode(
-                {"user": data["username"],
-                 "exp": datetime.now(timezone.utc) + timedelta(minutes=30)},
-                SECRET_KEY,
-                algorithm="HS256"
-            )
-            return jsonify(token=token)
-
-        return {"message": "Invalid login"}, 401
+        try:
+            # Busca o usuário pelo nome de usuário
+            user = db.session.query(Users).filter_by(username=username).one()
+            # Verifica o hash da senha
+            if user.check_password(password):
+                token = jwt.encode(
+                    {
+                        "user": data["username"],
+                        "exp": datetime.now(timezone.utc) + timedelta(
+                            minutes=30),
+                    },
+                    SECRET_KEY,
+                    algorithm="HS256"
+                )
+                return jsonify(token=token)
+            else:
+                return {"message": "Incorrect password"}, 401
+        # Trata o caso em que o usuário não é encontrado
+        except NoResultFound:
+            return {"message": "User not found"}, 404
+        except Exception:
+            return {"message": "Internal server error"}, 500
+        finally:
+            db.session.close()
 
 
 class GetTasks(Resource):
@@ -89,11 +107,13 @@ class GetTasks(Resource):
             return tasks.as_dict()
         except exc.IntegrityError:
             return {"message": "Ticket ID already exists"}, 400
+        finally:
+            db.session.close()
 
 
 class Task(Resource):
     def get(self, id):
-        # Obtém o token do cabeçalho da requisição
+        # Get token from request header
         auth_header = request.headers.get("Authorization")
         if not auth_header:
             return {"message": "Absent Token"}, 403
@@ -104,7 +124,7 @@ class Task(Resource):
         token = parts[1]
 
         try:
-            # Decodifica o token
+            # Decode token
             jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             tasks = Tasks.query.get(id)
             if tasks:
@@ -115,9 +135,11 @@ class Task(Resource):
             return {"message": "Expired Token"}, 401
         except jwt.InvalidTokenError:
             return {"message": "Invalid Token"}, 403
+        finally:
+            db.session.close()
 
     def delete(self, id):
-        # Obtém o token do cabeçalho da requisição
+        # Get token from request header
         auth_header = request.headers.get("Authorization")
         if not auth_header:
             return {"message": "Absent Token"}, 403
@@ -128,7 +150,7 @@ class Task(Resource):
         token = parts[1]
 
         try:
-            # Decodifica o token
+            # Decode token
             jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             tasks = Tasks.query.get(id)
             if tasks:
@@ -141,3 +163,5 @@ class Task(Resource):
             return {"message": "Expired Token"}, 401
         except jwt.InvalidTokenError:
             return {"message": "Invalid Token"}, 403
+        finally:
+            db.session.close()
