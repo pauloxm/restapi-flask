@@ -8,8 +8,8 @@ USE flask;
 
 CREATE TABLE IF NOT EXISTS `users` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `login` varchar(30) UNIQUE DEFAULT NOT NULL,
-    `password` varchar(30) DEFAULT NOT NULL,
+    `username` varchar(30) UNIQUE DEFAULT NULL,
+    `password` varchar(200) DEFAULT NULL,
     `name` varchar(100) DEFAULT NULL,
     PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ;
@@ -17,10 +17,10 @@ CREATE TABLE IF NOT EXISTS `users` (
 -- Dumping data for table `users`
 
 INSERT INTO `users` (
-    `login`,`password`,`name`)
+    `username`,`password`,`name`)
     values
-    ('john','$2a$10$6hEqi3ZvVJRbVVaaxOC30eH2vaNTTCK/nD569KAILMqUBRT7KTW32','John Doe');
--- Password bcrypt 10x - john.doe
+    ('john','john.doe','John Doe');
+-- Password - john.doe
 -- Table structure for table `tasks`
 
 CREATE TABLE IF NOT EXISTS `tasks` (
