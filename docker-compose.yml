@@ -29,7 +29,7 @@ services:
     build:
       context: .
     environment:
-      - FLASK_ENV=Development
+      - FLASK_ENV=development
       - SECRET_KEY="nwOh#YxQD1Sr%IF^172"
     container_name: restapi
     ports:
